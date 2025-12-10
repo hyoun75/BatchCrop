@@ -1,0 +1,5 @@
+{
+  "name": "BatchCrop Pro",
+  "description": "A powerful tool to batch crop multiple images with consistent relative dimensions and positioning. Perfect for preparing datasets or thumbnails.",
+  "requestFramePermissions": []
+}
