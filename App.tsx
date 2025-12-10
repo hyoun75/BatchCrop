@@ -4,14 +4,16 @@ import Dropzone from './components/Dropzone';
 import CropEditor from './components/CropEditor';
 import AdPlaceholder from './components/AdPlaceholder';
 import { getCroppedImg, generatePreview } from './utils/canvasUtils';
-import { Download, Layout, Image as ImageIcon, Trash2, Settings, Loader2, Plus } from 'lucide-react';
+import { Download, Layout, Image as ImageIcon, Trash2, Settings, Loader2, Plus, Info, Shield, FileText } from 'lucide-react';
 import JSZip from 'jszip';
 import saveAs from 'file-saver';
 
-// TODO: Replace these with your actual AdSense IDs
-const ADSENSE_CLIENT_ID = "YOUR_CLIENT_ID"; // e.g., ca-pub-1234567890123456
-const ADSENSE_SLOT_SIDEBAR = "YOUR_SIDEBAR_SLOT_ID"; 
-const ADSENSE_SLOT_BANNER = "YOUR_BANNER_SLOT_ID";
+// TODO: Replace these with your actual AdSense IDs before deployment
+// Go to Google AdSense -> Sites -> Add nata.pics
+// Get your Publisher ID (e.g., ca-pub-1234567890123456)
+const ADSENSE_CLIENT_ID = "ca-pub-0000000000000000"; 
+const ADSENSE_SLOT_SIDEBAR = "1234567890"; // Create a "Display ad (Square)" unit
+const ADSENSE_SLOT_BANNER = "0987654321";  // Create a "Display ad (Horizontal)" unit
 
 const App: React.FC = () => {
   const [images, setImages] = useState<UploadedImage[]>([]);
@@ -20,6 +22,7 @@ const App: React.FC = () => {
   const [aspectRatio, setAspectRatio] = useState<number>(1); // Default to 1:1
   const [isProcessing, setIsProcessing] = useState(false);
   const [previews, setPreviews] = useState<Record<string, string>>({});
+  const [showPrivacy, setShowPrivacy] = useState(false);
 
   // Requested aspect ratios
   const ASPECT_RATIOS = [
@@ -177,7 +180,7 @@ const App: React.FC = () => {
       <main className="flex-1 flex overflow-hidden">
         
         {/* Left Sidebar: Settings & List & Ad */}
-        <div className="w-80 bg-gray-900 border-r border-gray-800 flex flex-col shrink-0">
+        <div className="w-80 bg-gray-900 border-r border-gray-800 flex flex-col shrink-0 z-20 shadow-xl">
           <div className="p-4 border-b border-gray-800">
              <h2 className="text-xs font-semibold uppercase text-gray-500 mb-3 flex items-center gap-2">
                 <Settings className="w-3 h-3" /> Crop Settings
@@ -288,30 +291,94 @@ const App: React.FC = () => {
         </div>
 
         {/* Center: Workspace & Bottom Ad */}
-        <div className="flex-1 bg-gray-950 flex flex-col min-w-0">
-          <div className="flex-1 p-6 flex flex-col min-h-0 overflow-hidden">
+        <div className="flex-1 bg-gray-950 flex flex-col min-w-0 relative">
+          <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
             {images.length === 0 ? (
-                <div className="flex-1 flex flex-col items-center justify-center max-w-xl mx-auto w-full">
-                <div className="mb-8 text-center space-y-2">
-                    <h2 className="text-2xl font-bold text-white">Batch Crop Images</h2>
-                    <p className="text-gray-400">Upload multiple images, set the crop on one, and apply it to all.</p>
-                </div>
-                <Dropzone onFilesSelected={handleFilesSelected} />
+                <div className="flex-1 overflow-y-auto custom-scrollbar">
+                    <div className="max-w-3xl mx-auto w-full px-6 py-12">
+                        {/* Hero Section */}
+                        <div className="text-center mb-12">
+                            <h2 className="text-3xl font-bold text-white mb-4">Batch Crop Multiple Images</h2>
+                            <p className="text-lg text-gray-400 max-w-xl mx-auto">
+                                Apply the same crop setting to hundreds of images at once. 
+                                Perfect for creating datasets, thumbnails, or consistent social media posts.
+                            </p>
+                        </div>
+
+                        {/* Upload Area */}
+                        <div className="mb-16">
+                             <Dropzone onFilesSelected={handleFilesSelected} />
+                        </div>
+
+                        {/* SEO / How to use Content - Crucial for AdSense Approval */}
+                        <div className="grid md:grid-cols-2 gap-8 text-left">
+                            <div className="bg-gray-900/50 p-6 rounded-xl border border-gray-800">
+                                <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                                    <Info className="text-indigo-400" size={20}/> 
+                                    How to use
+                                </h3>
+                                <ul className="space-y-3 text-gray-400 text-sm leading-relaxed">
+                                    <li className="flex gap-2">
+                                        <span className="text-indigo-500 font-bold">1.</span>
+                                        <span>Upload your images by dragging them into the box above.</span>
+                                    </li>
+                                    <li className="flex gap-2">
+                                        <span className="text-indigo-500 font-bold">2.</span>
+                                        <span>Select an aspect ratio (e.g., 1:1, 16:9) from the sidebar.</span>
+                                    </li>
+                                    <li className="flex gap-2">
+                                        <span className="text-indigo-500 font-bold">3.</span>
+                                        <span>Adjust the crop area on the reference image. The same relative position will apply to all images.</span>
+                                    </li>
+                                    <li className="flex gap-2">
+                                        <span className="text-indigo-500 font-bold">4.</span>
+                                        <span>Click "Save Images" to download a ZIP file of your processed photos.</span>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div className="bg-gray-900/50 p-6 rounded-xl border border-gray-800">
+                                <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                                    <FileText className="text-indigo-400" size={20}/> 
+                                    Why use BatchCrop?
+                                </h3>
+                                <p className="text-gray-400 text-sm leading-relaxed mb-4">
+                                    BatchCrop Pro is a free online tool designed to streamline your image editing workflow. 
+                                    Instead of cropping photos one by one, you can process entire collections in seconds.
+                                </p>
+                                <p className="text-gray-400 text-sm leading-relaxed">
+                                    All processing happens locally in your browser. 
+                                    Your photos are <span className="text-white font-medium">never uploaded to a server</span>, 
+                                    ensuring 100% privacy and security for your data.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Footer - Required for AdSense */}
+                        <footer className="mt-16 pt-8 border-t border-gray-800 text-center text-gray-600 text-xs">
+                            <div className="flex justify-center gap-6 mb-4">
+                                <button onClick={() => setShowPrivacy(true)} className="hover:text-gray-400 transition-colors">Privacy Policy</button>
+                                <button className="hover:text-gray-400 transition-colors cursor-not-allowed">Terms of Service</button>
+                                <a href="mailto:contact@nata.pics" className="hover:text-gray-400 transition-colors">Contact</a>
+                            </div>
+                            <p>© {new Date().getFullYear()} BatchCrop Pro. All rights reserved.</p>
+                        </footer>
+                    </div>
                 </div>
             ) : (
                 <div className="flex-1 flex flex-col min-h-0">
                     {selectedImage ? (
                         <>
-                            <div className="mb-4 flex items-center justify-between shrink-0">
+                            <div className="mb-4 pt-6 px-6 flex items-center justify-between shrink-0">
                                 <h3 className="text-lg font-medium text-gray-200 flex items-center gap-2">
                                     <ImageIcon className="w-5 h-5 text-indigo-400" />
                                     Reference: <span className="text-gray-400">{selectedImage.name}</span>
                                 </h3>
                                 <div className="text-sm text-gray-500">
-                                    Adjust the crop box. This relative position applies to all images.
+                                    Adjust crop box. Applies to all images relatively.
                                 </div>
                             </div>
-                            <div className="flex-1 min-h-0 relative">
+                            <div className="flex-1 min-h-0 relative px-6 pb-2">
                                 <CropEditor 
                                     image={selectedImage}
                                     aspectRatio={aspectRatio}
@@ -329,7 +396,7 @@ const App: React.FC = () => {
           </div>
 
           {/* Main Footer Ad Slot */}
-          <div className="h-24 bg-gray-900 border-t border-gray-800 p-2 flex items-center justify-center shrink-0">
+          <div className="h-24 bg-gray-900 border-t border-gray-800 p-2 flex items-center justify-center shrink-0 z-20">
              <div className="w-full max-w-[728px] h-full">
                 <AdPlaceholder 
                     format="banner" 
@@ -340,6 +407,44 @@ const App: React.FC = () => {
           </div>
         </div>
       </main>
+
+      {/* Privacy Policy Modal - Required for AdSense */}
+      {showPrivacy && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+            <div className="bg-gray-900 border border-gray-800 rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto shadow-2xl">
+                <div className="p-6 border-b border-gray-800 flex justify-between items-center sticky top-0 bg-gray-900">
+                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                        <Shield className="text-indigo-500" /> Privacy Policy
+                    </h2>
+                    <button onClick={() => setShowPrivacy(false)} className="text-gray-400 hover:text-white">✕</button>
+                </div>
+                <div className="p-6 space-y-4 text-gray-300 text-sm leading-relaxed">
+                    <p><strong>Effective Date:</strong> {new Date().toLocaleDateString()}</p>
+                    <p>At BatchCrop Pro (accessible from nata.pics), one of our main priorities is the privacy of our visitors. This Privacy Policy document contains types of information that is collected and recorded by BatchCrop Pro and how we use it.</p>
+                    
+                    <h3 className="text-white font-bold text-lg mt-4">Log Files</h3>
+                    <p>BatchCrop Pro follows a standard procedure of using log files. These files log visitors when they visit websites. All hosting companies do this and a part of hosting services' analytics. The information collected by log files include internet protocol (IP) addresses, browser type, Internet Service Provider (ISP), date and time stamp, referring/exit pages, and possibly the number of clicks.</p>
+
+                    <h3 className="text-white font-bold text-lg mt-4">Local Processing</h3>
+                    <p>Unlike many other online tools, BatchCrop Pro processes your images <strong>locally within your web browser</strong>. Your images are NOT uploaded to our servers for processing. This ensures that your personal photos remain strictly on your device.</p>
+
+                    <h3 className="text-white font-bold text-lg mt-4">Google DoubleClick DART Cookie</h3>
+                    <p>Google is one of a third-party vendor on our site. It also uses cookies, known as DART cookies, to serve ads to our site visitors based upon their visit to www.website.com and other sites on the internet. However, visitors may choose to decline the use of DART cookies by visiting the Google ad and content network Privacy Policy at the following URL – <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noreferrer" className="text-indigo-400 underline">https://policies.google.com/technologies/ads</a></p>
+
+                    <h3 className="text-white font-bold text-lg mt-4">Consent</h3>
+                    <p>By using our website, you hereby consent to our Privacy Policy and agree to its Terms and Conditions.</p>
+                </div>
+                <div className="p-4 border-t border-gray-800 bg-gray-900 sticky bottom-0 text-right">
+                    <button 
+                        onClick={() => setShowPrivacy(false)}
+                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors"
+                    >
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+      )}
     </div>
   );
 };
