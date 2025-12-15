@@ -4,22 +4,32 @@ import Dropzone from './components/Dropzone';
 import CropEditor from './components/CropEditor';
 import AdPlaceholder from './components/AdPlaceholder';
 import { getCroppedImg, generatePreview } from './utils/canvasUtils';
-import { Download, Layout, Image as ImageIcon, Trash2, Settings, Loader2, Plus, Info, Shield, FileText } from 'lucide-react';
+import { Download, Layout, Image as ImageIcon, Trash2, Settings, Loader2, Plus, Info, Shield, FileText, RotateCcw } from 'lucide-react';
 import JSZip from 'jszip';
 import saveAs from 'file-saver';
 
-// TODO: Replace these with your actual AdSense IDs before deployment
-// Go to Google AdSense -> Sites -> Add nata.pics
-// Get your Publisher ID (e.g., ca-pub-1234567890123456)
-const ADSENSE_CLIENT_ID = "ca-pub-0000000000000000"; 
-const ADSENSE_SLOT_SIDEBAR = "1234567890"; // Create a "Display ad (Square)" unit
-const ADSENSE_SLOT_BANNER = "0987654321";  // Create a "Display ad (Horizontal)" unit
+// AdSense Configuration
+// Your Publisher ID: ca-pub-8164121612446768
+const ADSENSE_CLIENT_ID = "ca-pub-8164121612446768"; 
+// IMPORTANT: You must create 'Display Ad' units in Google AdSense dashboard and paste their Data-Ad-Slot IDs here.
+// Without valid Slot IDs, the ads will show as blank spaces.
+const ADSENSE_SLOT_SIDEBAR = "1234567890"; // Replace with actual Ad Unit ID for sidebar (Square/Vertical)
+const ADSENSE_SLOT_BANNER = "0987654321";  // Replace with actual Ad Unit ID for footer (Horizontal)
 
 const App: React.FC = () => {
   const [images, setImages] = useState<UploadedImage[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [cropArea, setCropArea] = useState<Area | null>(null);
-  const [aspectRatio, setAspectRatio] = useState<number>(1); // Default to 1:1
+  
+  // Initialize aspect ratio from localStorage or default to 1:1
+  const [aspectRatio, setAspectRatio] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('bc_aspect_ratio');
+      return saved ? parseFloat(saved) : 1;
+    }
+    return 1;
+  });
+
   const [isProcessing, setIsProcessing] = useState(false);
   const [previews, setPreviews] = useState<Record<string, string>>({});
   const [showPrivacy, setShowPrivacy] = useState(false);
@@ -32,6 +42,11 @@ const App: React.FC = () => {
     { label: '3:4', value: 3/4 },
     { label: '9:16', value: 9/16 },
   ];
+
+  // Save aspect ratio to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('bc_aspect_ratio', aspectRatio.toString());
+  }, [aspectRatio]);
 
   // When files are added
   const handleFilesSelected = async (files: File[]) => {
@@ -83,6 +98,18 @@ const App: React.FC = () => {
     });
     if (selectedId === id) {
       setSelectedId(null);
+    }
+  };
+
+  const handleReset = () => {
+    if (images.length === 0) return;
+    
+    if (window.confirm("Are you sure you want to remove all images and start over?")) {
+      setImages([]);
+      setSelectedId(null);
+      setCropArea(null);
+      setPreviews({});
+      // Note: We deliberately do NOT reset the aspect ratio as requested
     }
   };
 
@@ -215,6 +242,13 @@ const App: React.FC = () => {
                 <div className="flex items-center gap-2">
                     {images.length > 0 && (
                         <>
+                            <button
+                                onClick={handleReset}
+                                className="flex items-center gap-1 px-2 py-1 text-xs text-red-400 hover:text-red-300 bg-red-900/10 hover:bg-red-900/30 rounded border border-transparent hover:border-red-900/50 transition-colors"
+                                title="Remove all images"
+                            >
+                                Clear All
+                            </button>
                             <input 
                                 id="add-more-input" 
                                 type="file" 
@@ -280,8 +314,8 @@ const App: React.FC = () => {
             )}
           </div>
           
-          {/* Sidebar Ad Slot */}
-          <div className="p-4 border-t border-gray-800 bg-gray-900 shrink-0">
+          {/* Sidebar Ad Slot - Reduced padding to ensure 300px width fits (320px - 16px = 304px) */}
+          <div className="p-2 border-t border-gray-800 bg-gray-900 shrink-0 flex justify-center">
             <AdPlaceholder 
                 format="rectangle" 
                 adClient={ADSENSE_CLIENT_ID}
@@ -298,7 +332,7 @@ const App: React.FC = () => {
                     <div className="max-w-3xl mx-auto w-full px-6 py-12">
                         {/* Hero Section */}
                         <div className="text-center mb-12">
-                            <h2 className="text-3xl font-bold text-white mb-4">Batch Crop Multiple Images</h2>
+                            <h2 className="text-3xl font-bold text-white mb-4">BatchCrop Multiple Images</h2>
                             <p className="text-lg text-gray-400 max-w-xl mx-auto">
                                 Apply the same crop setting to hundreds of images at once. 
                                 Perfect for creating datasets, thumbnails, or consistent social media posts.

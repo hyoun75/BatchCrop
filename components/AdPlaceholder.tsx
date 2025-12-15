@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 interface AdPlaceholderProps {
   format: 'banner' | 'rectangle';
@@ -14,20 +14,34 @@ const AdPlaceholder: React.FC<AdPlaceholderProps> = ({
   adSlot 
 }) => {
   const adRef = useRef<HTMLModElement>(null);
+  const [adLoaded, setAdLoaded] = useState(false);
 
   useEffect(() => {
     // Only try to load the ad if we have valid IDs and the script is loaded
-    if (adClient && adSlot && window.adsbygoogle) {
-      try {
-        // Clear previous ad content if any (React strict mode safety)
-        if (adRef.current && adRef.current.innerHTML === "") {
-             (window.adsbygoogle = window.adsbygoogle || []).push({});
-        }
-      } catch (e) {
-        console.error("AdSense error:", e);
-      }
+    if (adClient && adSlot) {
+        // Use a timeout to allow the DOM to settle and width to be calculated
+        const timer = setTimeout(() => {
+             if (adRef.current && !adLoaded) {
+                 // Check if the element has width (is visible)
+                 if (adRef.current.offsetWidth > 0) {
+                     try {
+                         // Double check if ad is already inside (adsbygoogle modifies DOM)
+                         if (adRef.current.innerHTML.trim() === "") {
+                             (window.adsbygoogle = window.adsbygoogle || []).push({});
+                             setAdLoaded(true);
+                         }
+                     } catch (e) {
+                         console.error("AdSense error:", e);
+                     }
+                 } else {
+                     console.warn("AdSense: Ad slot has 0 width, skipping initialization.");
+                 }
+             }
+        }, 500); // 500ms delay to ensure layout
+        
+        return () => clearTimeout(timer);
     }
-  }, [adClient, adSlot]);
+  }, [adClient, adSlot, adLoaded]);
 
   // If IDs are missing, show the dummy placeholder (for development)
   if (!adClient || !adSlot || adClient === "YOUR_CLIENT_ID") {
@@ -49,14 +63,17 @@ const AdPlaceholder: React.FC<AdPlaceholderProps> = ({
 
   // Render Real Google Ad
   return (
-    <div className={`overflow-hidden ${className} ${format === 'banner' ? 'w-full h-full flex justify-center' : 'w-full'}`}>
+    <div 
+        className={`overflow-hidden flex justify-center items-center bg-gray-900 ${className} ${format === 'banner' ? 'w-full h-full' : 'w-full min-h-[250px]'}`}
+    >
       <ins
         ref={adRef}
         className="adsbygoogle"
         style={{ 
             display: 'block', 
-            width: '100%', 
-            height: '100%',
+            width: format === 'banner' ? '100%' : 'auto', 
+            height: format === 'banner' ? '100%' : 'auto',
+            minWidth: '250px', // Ensure minimum width to avoid 0 width error
             textAlign: 'center'
         }}
         data-ad-client={adClient}
