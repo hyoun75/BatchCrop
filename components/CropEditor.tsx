@@ -22,8 +22,8 @@ const CropEditor: React.FC<CropEditorProps> = ({ image, onCropComplete, aspectRa
   }, []);
 
   return (
-    <div className="flex flex-col h-full bg-gray-900 rounded-lg overflow-hidden border border-gray-800">
-      <div className="relative flex-1 bg-black min-h-[400px]">
+    <div className="flex flex-col h-full bg-gray-900 rounded-lg overflow-hidden border border-gray-800 shadow-sm">
+      <div className="relative flex-1 bg-black w-full">
         <Cropper
           image={image.url}
           crop={crop}
@@ -39,13 +39,13 @@ const CropEditor: React.FC<CropEditorProps> = ({ image, onCropComplete, aspectRa
         />
       </div>
 
-      <div className="p-4 bg-gray-850 border-t border-gray-800 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-           <span className="text-xs font-mono text-gray-400">Ref: {image.name}</span>
+      <div className="p-3 md:p-4 bg-gray-850 border-t border-gray-800 flex flex-wrap md:flex-nowrap items-center justify-between gap-3 md:gap-4 shrink-0">
+        <div className="flex items-center gap-2 min-w-0 hidden md:flex">
+           <span className="text-xs font-mono text-gray-400 truncate max-w-[150px]">Ref: {image.name}</span>
         </div>
         
-        <div className="flex items-center gap-4 flex-1 max-w-md">
-            <ZoomOut size={16} className="text-gray-400" />
+        <div className="flex items-center gap-3 flex-1 w-full md:w-auto">
+            <ZoomOut size={18} className="text-gray-400" />
             <input
               type="range"
               value={zoom}
@@ -54,9 +54,9 @@ const CropEditor: React.FC<CropEditorProps> = ({ image, onCropComplete, aspectRa
               step={0.1}
               aria-labelledby="Zoom"
               onChange={(e) => setZoom(Number(e.target.value))}
-              className="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+              className="w-full h-2 md:h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-indigo-500 touch-none"
             />
-            <ZoomIn size={16} className="text-gray-400" />
+            <ZoomIn size={18} className="text-gray-400" />
         </div>
 
         <button 
@@ -64,7 +64,7 @@ const CropEditor: React.FC<CropEditorProps> = ({ image, onCropComplete, aspectRa
             className="p-2 hover:bg-gray-700 rounded text-gray-400 hover:text-white transition-colors"
             title="Reset View"
         >
-            <RotateCcw size={16} />
+            <RotateCcw size={18} />
         </button>
       </div>
     </div>
