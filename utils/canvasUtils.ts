@@ -1,4 +1,4 @@
-import { Area } from '../types';
+import { Area, GridSettings } from '../types';
 
 export const createImage = (url: string): Promise<HTMLImageElement> =>
   new Promise((resolve, reject) => {
@@ -77,4 +77,66 @@ export async function generatePreview(
   const blob = await getCroppedImg(imageSrc, pixelCrop, refWidth, refHeight);
   if (!blob) return '';
   return URL.createObjectURL(blob);
+}
+
+/**
+ * Splits an image into a grid of blobs.
+ */
+export async function splitImageIntoGrid(
+  imageSrc: string,
+  settings: GridSettings
+): Promise<Blob[]> {
+  const image = await createImage(imageSrc);
+  const { rows, cols, margin } = settings;
+  
+  const totalWidth = image.naturalWidth;
+  const totalHeight = image.naturalHeight;
+  
+  const usableWidth = totalWidth - 2 * margin;
+  const usableHeight = totalHeight - 2 * margin;
+  
+  if (usableWidth <= 0 || usableHeight <= 0) {
+    throw new Error("Margin is too large for this image.");
+  }
+  
+  const cellWidth = usableWidth / cols;
+  const cellHeight = usableHeight / rows;
+  
+  const blobs: Blob[] = [];
+  
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) continue;
+      
+      canvas.width = cellWidth;
+      canvas.height = cellHeight;
+      
+      const sourceX = margin + c * cellWidth;
+      const sourceY = margin + r * cellHeight;
+      
+      ctx.drawImage(
+        image,
+        sourceX,
+        sourceY,
+        cellWidth,
+        cellHeight,
+        0,
+        0,
+        cellWidth,
+        cellHeight
+      );
+      
+      const blob = await new Promise<Blob | null>((resolve) => {
+        canvas.toBlob((b) => resolve(b), 'image/jpeg', 0.95);
+      });
+      
+      if (blob) {
+        blobs.push(blob);
+      }
+    }
+  }
+  
+  return blobs;
 }

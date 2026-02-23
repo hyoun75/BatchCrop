@@ -3,6 +3,7 @@ import { Area, UploadedImage } from './types';
 import Dropzone from './components/Dropzone';
 import CropEditor from './components/CropEditor';
 import AdPlaceholder from './components/AdPlaceholder';
+import GridCropView from './components/GridCropView';
 import { getCroppedImg, generatePreview } from './utils/canvasUtils';
 import { Download, Layout, Image as ImageIcon, Trash2, Settings, Loader2, Plus, Info, Shield, FileText, RotateCcw, List, Crop } from 'lucide-react';
 import JSZip from 'jszip';
@@ -16,6 +17,7 @@ const ADSENSE_SLOT_SIDEBAR = "1234567890"; // Replace with actual Ad Unit ID for
 const ADSENSE_SLOT_BANNER = "0987654321";  // Replace with actual Ad Unit ID for footer (Horizontal)
 
 const App: React.FC = () => {
+  const [appMode, setAppMode] = useState<'batch' | 'grid'>('batch');
   const [images, setImages] = useState<UploadedImage[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [cropArea, setCropArea] = useState<Area | null>(null);
@@ -183,7 +185,7 @@ const App: React.FC = () => {
   return (
     <div className="flex flex-col h-screen bg-gray-950 text-gray-200">
       {/* Header */}
-      <header className="h-14 md:h-16 border-b border-gray-800 bg-gray-900/50 backdrop-blur flex items-center justify-between px-4 md:px-6 shrink-0 z-10">
+      <header className="h-14 md:h-16 border-b border-gray-800 bg-gray-900/50 backdrop-blur flex items-center justify-between px-4 md:px-6 shrink-0 z-10 relative">
         <div className="flex items-center gap-2 md:gap-3">
           <div className="w-7 h-7 md:w-8 md:h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
             <Layout className="text-white w-4 h-4 md:w-5 md:h-5" />
@@ -191,7 +193,23 @@ const App: React.FC = () => {
           <h1 className="font-bold text-lg md:text-xl text-white tracking-tight">BatchCrop <span className="text-indigo-400 font-light hidden xs:inline">Pro</span></h1>
         </div>
         
+        <div className="absolute left-1/2 -translate-x-1/2 flex items-center bg-gray-800/80 p-1 rounded-lg border border-gray-700/50">
+          <button
+            onClick={() => setAppMode('batch')}
+            className={`px-3 md:px-4 py-1 md:py-1.5 rounded-md text-xs md:text-sm font-medium transition-colors ${appMode === 'batch' ? 'bg-gray-700 text-white shadow' : 'text-gray-400 hover:text-gray-200'}`}
+          >
+            Batch Crop
+          </button>
+          <button
+            onClick={() => setAppMode('grid')}
+            className={`px-3 md:px-4 py-1 md:py-1.5 rounded-md text-xs md:text-sm font-medium transition-colors ${appMode === 'grid' ? 'bg-gray-700 text-white shadow' : 'text-gray-400 hover:text-gray-200'}`}
+          >
+            Grid Crop
+          </button>
+        </div>
+
         <div className="flex items-center gap-4">
+          {appMode === 'batch' && (
              <button
               onClick={handleDownloadAll}
               disabled={isProcessing || images.length === 0}
@@ -205,10 +223,12 @@ const App: React.FC = () => {
               <span className="hidden md:inline">{isProcessing ? 'Processing...' : 'Save Images'}</span>
               <span className="md:hidden">{isProcessing ? 'Wait' : 'Save'}</span>
             </button>
+          )}
         </div>
       </header>
 
       {/* Main Content Area */}
+      {appMode === 'batch' ? (
       <main className="flex-1 flex overflow-hidden relative">
         
         {/* Left Sidebar: Settings & List & Ad */}
@@ -464,6 +484,9 @@ const App: React.FC = () => {
           </div>
         </div>
       </main>
+      ) : (
+        <GridCropView />
+      )}
 
       {/* Mobile Bottom Navigation - Only shown when images exist */}
       {images.length > 0 && (

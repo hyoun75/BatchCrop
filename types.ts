@@ -7,6 +7,13 @@ export interface UploadedImage {
   height: number;
 }
 
+export interface GridSettings {
+  rows: number;
+  cols: number;
+  margin: number;
+}
+
+
 export interface Area {
   x: number;
   y: number;
